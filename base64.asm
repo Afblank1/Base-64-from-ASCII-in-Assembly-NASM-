@@ -26,16 +26,19 @@ _start:
 	mov rsi, input_buffer
 	mov rdx, 300
 	syscall
-
+	
+	dec rax ; Ignore the newline character from Enter 
 	mov rdi, output_buffer ; Memory address for the output to be stored
 	mov rcx, rax ; Move length of user input into rcx
+	mov rsi, input_buffer ; Restore rsi 
 
 
 .encoding_loop:
 	cmp rcx, 3 ; Check if input contains at least 3 bytes left, if not jump to padding
 	jl .pad
+	xor rax, rax 
 	mov ah, [rsi]
-	shl rax, 8 ; Makes it so format is in Big Endian: [byte 0, byte 1, byte 2] | Little Indian: [byte2, byte 1, byte 0] "ah" register is the upper byte of the lowest 2 bytes while al is the lowest byte.
+	shl rax, 8 ; Makes it so format is in Big Endian lowest memory address is the leftmost: [byte 0, byte 1, byte 2] | Little Endian: [byte2, byte 1, byte 0] "ah" register is the upper byte of the lowest 2 bytes while al is the lowest byte.
 	mov ah, [rsi + 1]
 	mov al, [rsi + 2]
 	
@@ -74,5 +77,8 @@ _start:
 	cmp rcx, 0
 	je .print ; Prints right away if no padding is needed
 
-
+.exit:
+	mov rax, 60
+	xor rdi, rdi  
+	syscall 
 
